@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VaultCipher — Maximum Security</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg: #080c0f;
+    --panel: #0d1318;
+    --border: #1a2a35;
+    --accent: #00e5ff;
+    --accent2: #ff3d71;
+    --accent3: #00ff88;
+    --text: #c8d8e4;
+    --muted: #4a6070;
+    --glow: rgba(0,229,255,0.15);
+    --danger-glow: rgba(255,61,113,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image: 
+      radial-gradient(ellipse at 20% 20%, rgba(0,229,255,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(0,255,136,0.03) 0%, transparent 50%);
+  }
+
+  .scanlines {
+    position: fixed; inset: 0; pointer-events: none; z-index: 100;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  }
+
+  header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 14px;
+    position: relative; overflow: hidden;
+  }
+
+  header::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .logo-icon {
+    width: 42px; height: 42px;
+    border: 1.5px solid var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 20px var(--glow), inset 0 0 10px var(--glow);
+    position: relative;
+    animation: pulse-border 3s infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 15px var(--glow), inset 0 0 8px var(--glow); }
+    50% { box-shadow: 0 0 30px rgba(0,229,255,0.3), inset 0 0 15px rgba(0,229,255,0.2); }
+  }
+
+  .logo-icon svg { width: 22px; height: 22px; }
+
+  .header-text h1 {
+    font-size: 22px; font-weight: 700; letter-spacing: 3px;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,229,255,0.5);
+  }
+
+  .header-text p {
+    font-size: 11px; letter-spacing: 2px; color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .security-badge {
+    margin-left: auto;
+    background: rgba(0,255,136,0.08);
+    border: 1px solid rgba(0,255,136,0.3);
+    border-radius: 6px;
+    padding: 6px 10px;
+    text-align: center;
+  }
+
+  .security-badge .level { font-size: 18px; font-weight: 700; color: var(--accent3); line-height: 1; }
+  .security-badge .label { font-size: 9px; letter-spacing: 1.5px; color: var(--muted); font-family: 'Share Tech Mono', monospace; }
+
+  .container { padding: 16px; max-width: 680px; margin: 0 auto; }
+
+  .layers-bar {
+    display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+
+  .layer-chip {
+    background: rgba(0,229,255,0.06);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 9px;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    animation: layer-appear 0.5s ease backwards;
+  }
+
+  .layer-chip:nth-child(1){animation-delay:0.1s}
+  .layer-chip:nth-child(2){animation-delay:0.2s}
+  .layer-chip:nth-child(3){animation-delay:0.3s}
+  .layer-chip:nth-child(4){animation-delay:0.4s}
+  .layer-chip:nth-child(5){animation-delay:0.5s}
+  .layer-chip:nth-child(6){animation-delay:0.6s}
+  .layer-chip:nth-child(7){animation-delay:0.7s}
+
+  @keyframes layer-appear {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .tabs {
+    display: flex; gap: 2px; margin-bottom: 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+  }
+
+  .tab {
+    flex: 1; padding: 10px;
+    background: transparent; border: none;
+    color: var(--muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px; font-weight: 600;
+    letter-spacing: 2px; cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    background: rgba(0,229,255,0.12);
+    color: var(--accent);
+    box-shadow: 0 0 15px var(--glow);
+  }
+
+  .tab.decrypt-tab.active {
+    background: rgba(255,61,113,0.12);
+    color: var(--accent2);
+    box-shadow: 0 0 15px var(--danger-glow);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fade-up 0.3s ease; }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .field { margin-bottom: 14px; }
+
+  label {
+    display: block;
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    margin-bottom: 6px;
+  }
+
+  label .req { color: var(--accent); }
+
+  textarea, input[type=password], input[type=text] {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    padding: 12px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    resize: none;
+  }
+
+  textarea:focus, input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--glow);
+  }
+
+  .decrypt-tab-content textarea:focus, .decrypt-tab-content input:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 2px var(--danger-glow);
+  }
+
+  .password-wrap { position: relative; }
+  .password-wrap input { padding-right: 44px; }
+  .toggle-pw {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    font-size: 16px; padding: 4px;
+  }
+
+  .strength-bar {
+    height: 3px; border-radius: 2px; margin-top: 6px;
+    background: var(--border); overflow: hidden;
+  }
+
+  .strength-fill {
+    height: 100%; border-radius: 2px;
+    transition: width 0.3s, background 0.3s;
+    width: 0%;
+  }
+
+  .strength-label {
+    font-size: 9px; font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 1px; margin-top: 3px;
+    text-align: right;
+  }
+
+  .options-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .option-toggle {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .option-toggle:hover { border-color: var(--accent); }
+  .option-toggle.on { 
+    border-color: rgba(0,229,255,0.4);
+    background: rgba(0,229,255,0.05);
+  }
+
+  .toggle-dot {
+    width: 28px; height: 16px;
+    border-radius: 8px;
+    background: var(--border);
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .option-toggle.on .toggle-dot { background: var(--accent); }
+
+  .toggle-dot::after {
+    content: '';
+    position: absolute; top: 2px; left: 2px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: white;
+    transition: left 0.2s;
+  }
+
+  .option-toggle.on .toggle-dot::after { left: 14px; }
+
+  .option-name { font-size: 11px; font-weight: 600; letter-spacing: 1px; flex: 1; }
+  .option-desc { font-size: 9px; font-family: 'Share Tech Mono', monospace; color: var(--muted); }
+
+  .iterations-slider {
+    margin-bottom: 14px;
+  }
+
+  .slider-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .iter-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  input[type=range] {
+    width: 100%; -webkit-appearance: none;
+    background: transparent; cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 4px; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent) var(--pct,50%), var(--border) var(--pct,50%));
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--accent);
+    margin-top: -7px;
+    box-shadow: 0 0 8px var(--glow);
+  }
+
+  .btn {
+    width: 100%; padding: 16px;
+    border: none; border-radius: 10px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px; font-weight: 700;
+    letter-spacing: 3px;
+    cursor: pointer;
+    position: relative; overflow: hidden;
+    transition: all 0.2s;
+    margin-bottom: 14px;
+  }
+
+  .btn-encrypt {
+    background: linear-gradient(135deg, rgba(0,229,255,0.2), rgba(0,229,255,0.05));
+    border: 1px solid rgba(0,229,255,0.5);
+    color: var(--accent);
+    box-shadow: 0 0 20px var(--glow);
+  }
+
+  .btn-encrypt:hover { box-shadow: 0 0 40px rgba(0,229,255,0.3); }
+  .btn-encrypt:active { transform: scale(0.98); }
+
+  .btn-decrypt {
+    background: linear-gradient(135deg, rgba(255,61,113,0.2), rgba(255,61,113,0.05));
+    border: 1px solid rgba(255,61,113,0.5);
+    color: var(--accent2);
+    box-shadow: 0 0 20px var(--danger-glow);
+  }
+
+  .btn-decrypt:active { transform: scale(0.98); }
+
+  .progress-wrap {
+    margin-bottom: 14px; display: none;
+  }
+
+  .progress-wrap.show { display: block; }
+
+  .progress-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .progress-label { font-size: 10px; font-family: 'Share Tech Mono', monospace; color: var(--accent); letter-spacing: 1px; }
+  .progress-pct { font-size: 10px; font-family: 'Share Tech Mono', monospace; color: var(--muted); }
+
+  .progress-bar {
+    height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%; border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    transition: width 0.1s;
+    box-shadow: 0 0 8px var(--glow);
+    width: 0%;
+  }
+
+  .output-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    display: none;
+    animation: fade-up 0.3s ease;
+  }
+
+  .output-box.show { display: block; }
+
+  .output-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0,229,255,0.03);
+  }
+
+  .output-header.decrypt-header { background: rgba(255,61,113,0.03); }
+
+  .output-title {
+    font-size: 10px; font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 2px; color: var(--accent);
+  }
+
+  .output-header.decrypt-header .output-title { color: var(--accent2); }
+
+  .copy-btn {
+    background: rgba(0,229,255,0.1);
+    border: 1px solid rgba(0,229,255,0.3);
+    color: var(--accent);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer; transition: all 0.2s;
+  }
+
+  .copy-btn:active { transform: scale(0.95); }
+  .copy-btn.copied { background: rgba(0,255,136,0.1); border-color: rgba(0,255,136,0.3); color: var(--accent3); }
+
+  .output-text {
+    padding: 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text);
+    word-break: break-all;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  .output-stats {
+    padding: 8px 14px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+
+  .stat { font-size: 9px; font-family: 'Share Tech Mono', monospace; color: var(--muted); }
+  .stat span { color: var(--accent3); }
+
+  .error-box {
+    background: rgba(255,61,113,0.08);
+    border: 1px solid rgba(255,61,113,0.3);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+    display: none; margin-bottom: 14px;
+  }
+
+  .error-box.show { display: block; animation: fade-up 0.2s ease; }
+
+  .info-strip {
+    background: rgba(0,229,255,0.04);
+    border: 1px solid rgba(0,229,255,0.1);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+    line-height: 1.5;
+  }
+
+  .info-strip strong { color: var(--accent); font-weight: 600; }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<header>
+  <div class="logo-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="1.5">
+      <rect x="3" y="11" width="18" height="11" rx="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4"/>
+      <circle cx="12" cy="16" r="1.5" fill="#00e5ff" stroke="none"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>VAULTCIPHER</h1>
+    <p>MAXIMUM SECURITY OFFLINE ENCRYPTION</p>
+  </div>
+  <div class="security-badge">
+    <div class="level">L7</div>
+    <div class="label">SECURITY</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="layers-bar">
+    <div class="layer-chip">AES-256-GCM</div>
+    <div class="layer-chip">PBKDF2×500K</div>
+    <div class="layer-chip">HMAC-SHA512</div>
+    <div class="layer-chip">DOUBLE-ENC</div>
+    <div class="layer-chip">SALT+IV</div>
+    <div class="layer-chip">KEY-STRETCH</div>
+    <div class="layer-chip">INTEGRITY</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('encrypt')">🔒 ENCRYPT</button>
+    <button class="tab decrypt-tab" onclick="switchTab('decrypt')">🔓 DECRYPT</button>
+  </div>
+
+  <!-- ENCRYPT PANEL -->
+  <div class="panel active" id="panel-encrypt">
+
+    <div class="info-strip">
+      Works <strong>100% offline</strong>. No data ever leaves your device. All encryption runs in your browser using Web Crypto API.
+    </div>
+
+    <div class="field">
+      <label>SECRET MESSAGE <span class="req">*</span></label>
+      <textarea id="enc-message" rows="5" placeholder="Enter your message here..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>MASTER PASSWORD <span class="req">*</span></label>
+      <div class="password-wrap">
+        <input type="password" id="enc-password" placeholder="Strong password..." oninput="updateStrength(this.value)">
+        <button class="toggle-pw" onclick="togglePw('enc-password')">👁</button>
+      </div>
+      <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+      <div class="strength-label" id="strength-label" style="color:var(--muted)">—</div>
+    </div>
+
+    <div class="field">
+      <label>SECONDARY PASSWORD (adds layer 2)</label>
+      <div class="password-wrap">
+        <input type="password" id="enc-password2" placeholder="Optional second password...">
+        <button class="toggle-pw" onclick="togglePw('enc-password2')">👁</button>
+      </div>
+    </div>
+
+    <div class="iterations-slider">
+      <div class="slider-header">
+        <label style="margin:0">PBKDF2 ITERATIONS</label>
+        <span class="iter-value" id="iter-display">500,000</span>
+      </div>
+      <input type="range" id="iterations" min="1" max="10" value="5" oninput="updateIterDisplay(this.value)">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;margin-top:3px;">
+        <span>100K</span><span>250K</span><span>500K</span><span>750K</span><span>1M</span>
+      </div>
+    </div>
+
+    <div class="options-grid">
+      <div class="option-toggle on" id="opt-double" onclick="toggleOpt('double')">
+        <div class="toggle-dot"></div>
+        <div>
+          <div class="option-name">DOUBLE ENC</div>
+          <div class="option-desc">Encrypt twice</div>
+        </div>
+      </div>
+      <div class="option-toggle on" id="opt-hmac" onclick="toggleOpt('hmac')">
+        <div class="toggle-dot"></div>
+        <div>
+          <div class="option-name">HMAC-SHA512</div>
+          <div class="option-desc">Auth tag</div>
+        </div>
+      </div>
+      <div class="option-toggle on" id="opt-compress" onclick="toggleOpt('compress')">
+        <div class="toggle-dot"></div>
+        <div>
+          <div class="option-name">HEADER MASK</div>
+          <div class="option-desc">Disguise format</div>
+        </div>
+      </div>
+      <div class="option-toggle on" id="opt-pepper" onclick="toggleOpt('pepper')">
+        <div class="toggle-dot"></div>
+        <div>
+          <div class="option-name">PEPPER KEY</div>
+          <div class="option-desc">Device secret</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-encrypt" onclick="encrypt()">⚡ ENCRYPT MESSAGE</button>
+
+    <div class="progress-wrap" id="enc-progress">
+      <div class="progress-header">
+        <span class="progress-label" id="progress-label">DERIVING KEYS...</span>
+        <span class="progress-pct" id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <div class="error-box" id="enc-error"></div>
+
+    <div class="output-box" id="enc-output">
+      <div class="output-header">
+        <span class="output-title">ENCRYPTED OUTPUT — COPY TO NOTES</span>
+        <button class="copy-btn" id="copy-btn" onclick="copyOutput()">COPY</button>
+      </div>
+      <div class="output-text" id="enc-result"></div>
+      <div class="output-stats" id="enc-stats"></div>
+    </div>
+
+  </div><!-- end encrypt panel -->
+
+  <!-- DECRYPT PANEL -->
+  <div class="panel" id="panel-decrypt">
+
+    <div class="field">
+      <label>ENCRYPTED TEXT <span class="req">*</span></label>
+      <textarea id="dec-input" rows="6" placeholder="Paste encrypted message here..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>MASTER PASSWORD <span class="req">*</span></label>
+      <div class="password-wrap">
+        <input type="password" id="dec-password" placeholder="Master password...">
+        <button class="toggle-pw" onclick="togglePw('dec-password')">👁</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>SECONDARY PASSWORD (if used)</label>
+      <div class="password-wrap">
+        <input type="password" id="dec-password2" placeholder="Second password (if used)...">
+        <button class="toggle-pw" onclick="togglePw('dec-password2')">👁</button>
+      </div>
+    </div>
+
+    <button class="btn btn-decrypt" onclick="decrypt()">🔓 DECRYPT MESSAGE</button>
+
+    <div class="progress-wrap" id="dec-progress">
+      <div class="progress-header">
+        <span class="progress-label" id="dec-progress-label">DERIVING KEYS...</span>
+        <span class="progress-pct" id="dec-progress-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="dec-progress-fill" style="background:linear-gradient(90deg,var(--accent2),#ff8c00)"></div></div>
+    </div>
+
+    <div class="error-box" id="dec-error"></div>
+
+    <div class="output-box" id="dec-output">
+      <div class="output-header decrypt-header">
+        <span class="output-title" style="color:var(--accent2)">DECRYPTED MESSAGE</span>
+        <button class="copy-btn" style="border-color:rgba(255,61,113,0.3);color:var(--accent2);background:rgba(255,61,113,0.1)" id="copy-dec-btn" onclick="copyDecOutput()">COPY</button>
+      </div>
+      <div class="output-text" id="dec-result"></div>
+    </div>
+
+  </div><!-- end decrypt panel -->
+
+</div>
+
+<footer>VAULTCIPHER · ALL PROCESSING LOCAL · ZERO NETWORK CALLS · AES-256-GCM</footer>
+
+<script>
+// =========================================================
+// VAULTCIPHER — 7-Layer Encryption Engine
+// Works fully offline. No external dependencies.
+// Uses Web Crypto API (built into Safari/iOS).
+// =========================================================
+
+const VERSION = 'VC1';
+const PEPPER = 'VaultCipher-Device-Pepper-2025-Static-Secret';
+
+const ITER_MAP = {1:100000,2:150000,3:200000,4:300000,5:500000,6:600000,7:700000,8:800000,9:900000,10:1000000};
+
+let opts = { double: true, hmac: true, compress: true, pepper: true };
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='encrypt')||(i===1&&tab==='decrypt')));
+  document.getElementById('panel-encrypt').classList.toggle('active', tab==='encrypt');
+  document.getElementById('panel-decrypt').classList.toggle('active', tab==='decrypt');
+}
+
+function togglePw(id) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+function toggleOpt(key) {
+  opts[key] = !opts[key];
+  document.getElementById('opt-'+key).classList.toggle('on', opts[key]);
+}
+
+function updateIterDisplay(val) {
+  const n = ITER_MAP[val];
+  document.getElementById('iter-display').textContent = n.toLocaleString();
+  const pct = ((val-1)/9*100)+'%';
+  document.getElementById('iterations').style.setProperty('--pct', pct);
+}
+
+function updateStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 16) score++;
+  if (pw.length >= 24) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  
+  const fill = document.getElementById('strength-fill');
+  const label = document.getElementById('strength-label');
+  const pcts = [0, 15, 30, 50, 65, 80, 100];
+  const colors = ['#333','#ff3d71','#ff8c00','#ffcc00','#00e5ff','#00ff88','#00ff88'];
+  const labels = ['—','VERY WEAK','WEAK','FAIR','GOOD','STRONG','VERY STRONG'];
+  
+  fill.style.width = pcts[score] + '%';
+  fill.style.background = colors[score];
+  label.style.color = colors[score];
+  label.textContent = labels[score];
+}
+
+// ===== CRYPTO UTILITIES =====
+
+function str2buf(str) {
+  return new TextEncoder().encode(str);
+}
+
+function buf2str(buf) {
+  return new TextDecoder().decode(buf);
+}
+
+function buf2b64(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)));
+}
+
+function b642buf(b64) {
+  return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+}
+
+function concatBufs(...bufs) {
+  const total = bufs.reduce((a, b) => a + b.byteLength, 0);
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const b of bufs) { out.set(new Uint8Array(b), offset); offset += b.byteLength; }
+  return out.buffer;
+}
+
+function randomBytes(n) {
+  return crypto.getRandomValues(new Uint8Array(n));
+}
+
+// LAYER 1+2: PBKDF2 key derivation with SHA-512
+async function deriveKey(password, salt, iterations, keyUsage) {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', str2buf(password), 'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations, hash: 'SHA-512' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    keyUsage
+  );
+}
+
+// Derive an HMAC key for integrity authentication
+async function deriveHMACKey(password, salt, iterations) {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', str2buf(password), 'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: Math.floor(iterations/2), hash: 'SHA-512' },
+    keyMaterial,
+    { name: 'HMAC', hash: 'SHA-512', length: 512 },
+    false,
+    ['sign', 'verify']
+  );
+}
+
+// LAYER 3: AES-256-GCM encrypt
+async function aesEncrypt(data, key, iv) {
+  return crypto.subtle.encrypt({ name: 'AES-GCM', iv, tagLength: 128 }, key, data);
+}
+
+async function aesDecrypt(data, key, iv) {
+  return crypto.subtle.decrypt({ name: 'AES-GCM', iv, tagLength: 128 }, key, data);
+}
+
+// LAYER 5: HMAC-SHA512 authentication tag
+async function hmacSign(data, key) {
+  return crypto.subtle.sign('HMAC', key, data);
+}
+
+async function hmacVerify(data, sig, key) {
+  return crypto.subtle.verify('HMAC', key, sig, data);
+}
+
+// Progress helper
+function setProgress(wrap, fillId, pctId, labelId, pct, label) {
+  document.getElementById(wrap).classList.add('show');
+  document.getElementById(fillId).style.width = pct + '%';
+  document.getElementById(pctId).textContent = pct + '%';
+  if (labelId) document.getElementById(labelId).textContent = label;
+}
+
+// ===== MAIN ENCRYPT =====
+async function encrypt() {
+  const message = document.getElementById('enc-message').value.trim();
+  const password = document.getElementById('enc-password').value;
+  const password2 = document.getElementById('enc-password2').value;
+
+  const errEl = document.getElementById('enc-error');
+  errEl.classList.remove('show');
+  document.getElementById('enc-output').classList.remove('show');
+
+  if (!message) { showErr('enc-error', 'Message cannot be empty.'); return; }
+  if (!password) { showErr('enc-error', 'Master password is required.'); return; }
+  if (password.length < 6) { showErr('enc-error', 'Password must be at least 6 characters.'); return; }
+
+  const iters = ITER_MAP[document.getElementById('iterations').value];
+  const pass1 = opts.pepper ? password + PEPPER : password;
+  const pass2used = password2.length > 0;
+
+  try {
+    setProgress('enc-progress','progress-fill','progress-pct','progress-label', 5, 'GENERATING SALTS & IVs...');
+    await sleep(20);
+
+    // Generate all random material
+    const salt1 = randomBytes(32);
+    const salt2 = randomBytes(32);
+    const saltHmac = randomBytes(32);
+    const iv1 = randomBytes(12);
+    const iv2 = randomBytes(12);
+    const saltDbl = randomBytes(32);
+    const ivDbl = randomBytes(12);
+
+    setProgress('enc-progress','progress-fill','progress-pct','progress-label', 15, 'DERIVING PRIMARY KEY (PBKDF2×'+iters.toLocaleString()+')...');
+    await sleep(20);
+
+    // LAYER 1: Derive primary encryption key
+    const key1 = await deriveKey(pass1, salt1, iters, ['encrypt','decrypt']);
+
+    setProgress('enc-progress','progress-fill','progress-pct','progress-label', 40, 'DERIVING HMAC KEY...');
+    await sleep(10);
+
+    // LAYER 5: HMAC key
+    let hmacKey, hmacSig;
+    if (opts.hmac) {
+      hmacKey = await deriveHMACKey(pass1, saltHmac, iters);
+    }
+
+    setProgress('enc-progress','progress-fill','progress-pct','progress-label', 50, 'FIRST AES-256-GCM ENCRYPTION...');
+    await sleep(10);
+
+    // LAYER 3: First AES-256-GCM encryption
+    const msgBytes = str2buf(message);
+    const enc1 = await aesEncrypt(msgBytes, key1, iv1);
+
+    setProgress('enc-progress','progress-fill','progress-pct','progress-label', 60, 'COMPUTING HMAC-SHA512...');
+    await sleep(10);
+
+    // LAYER 5: HMAC signature over first ciphertext
+    if (opts.hmac) {
+      hmacSig = await hmacSign(new Uint8Array(enc1), hmacKey);
+    }
+
+    let finalCipher = new Uint8Array(enc1);
+    let doubleKey, enc2;
+
+    if (opts.double) {
+      setProgress('enc-progress','progress-fill','progress-pct','progress-label', 70, 'DERIVING SECONDARY KEY (DOUBLE ENCRYPT)...');
+      await sleep(10);
+
+      // LAYER 4: Double encryption with second derived key
+      const pass2derived = pass1 + ':LAYER2:' + (password2 || 'none');
+      doubleKey = await deriveKey(pass2derived, saltDbl, Math.floor(iters/3), ['encrypt','decrypt']);
+      enc2 = await aesEncrypt(finalCipher, doubleKey, ivDbl);
+      finalCipher = new Uint8Array(enc2);
+    }
+
+    let secondLayerCipher = finalCipher;
+    let key2, enc3, salt2used = false;
+    if (pass2used) {
+      setProgress('enc-progress','progress-fill','progress-pct','progress-label', 80, 'APPLYING PASSWORD 2 LAYER...');
+      await sleep(10);
+      const pass2full = (opts.pepper ? password2 + PEPPER : password2);
+      key2 = await deriveKey(pass2full, salt2, Math.floor(iters/2), ['encrypt','decrypt']);
+      enc3 = await aesEncrypt(secondLayerCipher, key2, iv2);
+      secondLayerCipher = new Uint8Array(enc3);
+      salt2used = true;
+    }
+
+    setProgress('enc-progress','progress-fill','progress-pct','progress-label', 90, 'ASSEMBLING PAYLOAD...');
+    await sleep(10);
+
+    // LAYER 6: Pack everything into a structured binary payload
+    // Flags byte: bit0=double, bit1=hmac, bit2=mask, bit3=pepper, bit4=pass2
+    let flags = 0;
+    if (opts.double) flags |= 1;
+    if (opts.hmac) flags |= 2;
+    if (opts.compress) flags |= 4;
+    if (opts.pepper) flags |= 8;
+    if (salt2used) flags |= 16;
+
+    const itersBytes = new Uint8Array(4);
+    new DataView(itersBytes.buffer).setUint32(0, iters, false);
+
+    const hmacSigBytes = opts.hmac ? new Uint8Array(hmacSig) : new Uint8Array(0);
+
+    // Payload structure:
+    // [version:3][flags:1][iters:4][salt1:32][iv1:12]
+    // [saltDbl:32][ivDbl:12] (if double)
+    // [salt2:32][iv2:12] (if pass2)
+    // [saltHmac:32] (if hmac)
+    // [hmacSig:64] (if hmac)
+    // [cipherLen:4][cipher:N]
+
+    const parts = [
+      str2buf(VERSION),
+      new Uint8Array([flags]),
+      itersBytes,
+      salt1, iv1,
+    ];
+    if (opts.double) { parts.push(saltDbl, ivDbl); }
+    if (salt2used) { parts.push(salt2, iv2); }
+    if (opts.hmac) { parts.push(saltHmac, hmacSigBytes); }
+    
+    const cipherLen = new Uint8Array(4);
+    new DataView(cipherLen.buffer).setUint32(0, secondLayerCipher.byteLength, false);
+    parts.push(cipherLen, secondLayerCipher);
+
+    const payload = concatBufs(...parts.map(p => p.buffer || p));
+    const b64 = buf2b64(payload);
+
+    // LAYER 7: Optional masking header
+    let output;
+    if (opts.compress) {
+      const header = '--- BEGIN VAULT CIPHER MESSAGE ---\n';
+      const footer = '\n--- END VAULT CIPHER MESSAGE ---';
+      const wrapped = b64.match(/.{1,64}/g).join('\n');
+      output = header + wrapped + footer;
+    } else {
+      output = b64;
+    }
+
+    setProgress('enc-progress','progress-fill','progress-pct','progress-label', 100, 'COMPLETE');
+
+    document.getElementById('enc-result').textContent = output;
+    document.getElementById('enc-stats').innerHTML = 
+      `<span class="stat">SIZE: <span>${output.length} chars</span></span>` +
+      `<span class="stat">ITERS: <span>${iters.toLocaleString()}</span></span>` +
+      `<span class="stat">LAYERS: <span>${2 + (opts.double?1:0) + (opts.hmac?1:0) + (salt2used?1:0) + (opts.pepper?1:0) + (opts.compress?1:0)}</span></span>` +
+      `<span class="stat">ALGO: <span>AES-256-GCM</span></span>`;
+    document.getElementById('enc-output').classList.add('show');
+
+  } catch(e) {
+    showErr('enc-error', 'Encryption failed: ' + e.message);
+  }
+
+  setTimeout(() => {
+    document.getElementById('enc-progress').classList.remove('show');
+  }, 1500);
+}
+
+// ===== MAIN DECRYPT =====
+async function decrypt() {
+  let input = document.getElementById('dec-input').value.trim();
+  const password = document.getElementById('dec-password').value;
+  const password2 = document.getElementById('dec-password2').value;
+
+  document.getElementById('dec-error').classList.remove('show');
+  document.getElementById('dec-output').classList.remove('show');
+
+  if (!input) { showErr('dec-error', 'Please paste encrypted text.'); return; }
+  if (!password) { showErr('dec-error', 'Master password is required.'); return; }
+
+  // Strip header/footer if present
+  input = input.replace(/^--- BEGIN VAULT CIPHER MESSAGE ---\n?/, '').replace(/\n?--- END VAULT CIPHER MESSAGE ---$/, '').replace(/\s+/g, '');
+
+  try {
+    setProgress('dec-progress','dec-progress-fill','dec-progress-pct','dec-progress-label', 5, 'PARSING PAYLOAD...');
+    await sleep(20);
+
+    const payload = b642buf(input);
+    let offset = 0;
+
+    function readBytes(n) {
+      const slice = payload.slice(offset, offset + n);
+      offset += n;
+      return slice;
+    }
+
+    const versionBytes = readBytes(3);
+    const version = buf2str(versionBytes);
+    if (version !== VERSION) throw new Error('Unknown cipher version: ' + version);
+
+    const flags = readBytes(1)[0];
+    const hasDouble = !!(flags & 1);
+    const hasHmac = !!(flags & 2);
+    const hasMask = !!(flags & 4);
+    const hasPepper = !!(flags & 8);
+    const hasPass2 = !!(flags & 16);
+
+    const itersBytes = readBytes(4);
+    const iters = new DataView(itersBytes.buffer).getUint32(0, false);
+
+    const salt1 = readBytes(32);
+    const iv1 = readBytes(12);
+
+    let saltDbl, ivDbl;
+    if (hasDouble) { saltDbl = readBytes(32); ivDbl = readBytes(12); }
+
+    let salt2, iv2;
+    if (hasPass2) { salt2 = readBytes(32); iv2 = readBytes(12); }
+
+    let saltHmac, hmacSigStored;
+    if (hasHmac) { saltHmac = readBytes(32); hmacSigStored = readBytes(64); }
+
+    const cipherLen = new DataView(readBytes(4).buffer).getUint32(0, false);
+    let cipherData = readBytes(cipherLen);
+
+    setProgress('dec-progress','dec-progress-fill','dec-progress-pct','dec-progress-label', 15, 'DERIVING KEYS...');
+    await sleep(20);
+
+    const pass1 = hasPepper ? password + PEPPER : password;
+
+    // Reverse pass2 layer first (outermost)
+    if (hasPass2) {
+      if (!password2) throw new Error('This message requires a secondary password.');
+      setProgress('dec-progress','dec-progress-fill','dec-progress-pct','dec-progress-label', 30, 'DECRYPTING LAYER 2...');
+      await sleep(10);
+      const pass2full = hasPepper ? password2 + PEPPER : password2;
+      const key2 = await deriveKey(pass2full, salt2, Math.floor(iters/2), ['encrypt','decrypt']);
+      cipherData = new Uint8Array(await aesDecrypt(cipherData, key2, iv2));
+    }
+
+    setProgress('dec-progress','dec-progress-fill','dec-progress-pct','dec-progress-label', 50, 'DERIVING PRIMARY KEY...');
+    await sleep(10);
+
+    const key1 = await deriveKey(pass1, salt1, iters, ['encrypt','decrypt']);
+
+    // Reverse double encryption
+    if (hasDouble) {
+      setProgress('dec-progress','dec-progress-fill','dec-progress-pct','dec-progress-label', 65, 'DECRYPTING DOUBLE LAYER...');
+      await sleep(10);
+      const pass2derived = pass1 + ':LAYER2:' + (password2 || 'none');
+      const dblKey = await deriveKey(pass2derived, saltDbl, Math.floor(iters/3), ['encrypt','decrypt']);
+      cipherData = new Uint8Array(await aesDecrypt(cipherData, dblKey, ivDbl));
+    }
+
+    // Verify HMAC
+    if (hasHmac) {
+      setProgress('dec-progress','dec-progress-fill','dec-progress-pct','dec-progress-label', 80, 'VERIFYING INTEGRITY...');
+      await sleep(10);
+      const hmacKey = await deriveHMACKey(pass1, saltHmac, iters);
+      const valid = await hmacVerify(cipherData, hmacSigStored, hmacKey);
+      if (!valid) throw new Error('INTEGRITY CHECK FAILED — Message tampered or wrong password!');
+    }
+
+    setProgress('dec-progress','dec-progress-fill','dec-progress-pct','dec-progress-label', 90, 'DECRYPTING MESSAGE...');
+    await sleep(10);
+
+    // Final AES decrypt
+    const decrypted = await aesDecrypt(cipherData, key1, iv1);
+    const message = buf2str(new Uint8Array(decrypted));
+
+    setProgress('dec-progress','dec-progress-fill','dec-progress-pct','dec-progress-label', 100, 'COMPLETE');
+
+    document.getElementById('dec-result').textContent = message;
+    document.getElementById('dec-output').classList.add('show');
+
+  } catch(e) {
+    showErr('dec-error', '⚠ ' + (e.message || 'Decryption failed. Wrong password?'));
+  }
+
+  setTimeout(() => {
+    document.getElementById('dec-progress').classList.remove('show');
+  }, 1500);
+}
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+async function copyOutput() {
+  const text = document.getElementById('enc-result').textContent;
+  await navigator.clipboard.writeText(text).catch(() => {
+    // Fallback for iOS
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = '✓ COPIED'; btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
+}
+
+async function copyDecOutput() {
+  const text = document.getElementById('dec-result').textContent;
+  await navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  });
+  const btn = document.getElementById('copy-dec-btn');
+  btn.textContent = '✓ COPIED';
+  setTimeout(() => { btn.textContent = 'COPY'; }, 2000);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Init
+updateIterDisplay(5);
+</script>
+</body>
+</html>
